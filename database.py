@@ -41,6 +41,38 @@ class Database:
         if not s or not s.isdigit():
             return None
         return int(s)
+    
+    # Нормализация любых текстовых строк
+    def _norm_text(self, value):
+        if value is None:
+            return ""
+        return str(value).strip().casefold()
+    
+    def is_duplicate_book(self, title, volume, author, year, genre, exclude_id=None):
+        """True — такая книга уже есть (все поля совпадают, регистр не важен).
+        exclude_id — при редактировании не сравнивать с самой собой.
+        """
+        t = self._norm_text(title)
+        a = self._norm_text(author)
+        g = self._norm_text(genre)
+        vol = self._prepare_volume(volume)
+        y = self._prepare_year(year)
+        self.cursor.execute(
+            "SELECT id, title, volume, author, year, genre FROM library"
+        )
+        for row in self.cursor.fetchall():
+            bid, r_title, r_vol, r_author, r_year, r_genre = row
+            if exclude_id is not None and bid == exclude_id:
+                continue
+            if (
+                self._norm_text(r_title) == t
+                and self._prepare_volume(r_vol) == vol
+                and self._norm_text(r_author) == a
+                and self._prepare_year(r_year) == y
+                and self._norm_text(r_genre) == g
+            ):
+                return True
+        return False
   
     def add_book(self, title, volume, author, year, genre):
         """Добавление новой книги"""

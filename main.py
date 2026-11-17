@@ -114,10 +114,32 @@ class BookDialog(QDialog):
             self.year_edit.setFocus()
             return False
         return True
+
     def try_save(self):
         """OK: проверка → закрыть только если всё ок."""
         if not self.validate_form():
-            return  # диалог НЕ закрывается
+            return # диалог НЕ закрывается
+        parent = self.parent()
+        if parent is None or not hasattr(parent, "db"):
+            self.accept()
+            return
+        data = self.get_book_data()
+        exclude_id = self.book_data[0] if self.book_data else None
+        if parent.db.is_duplicate_book(
+            data["title"],
+            data["volume"],
+            data["author"],
+            data["year"],
+            data["genre"],
+            exclude_id=exclude_id,
+        ):
+            QMessageBox.warning(
+                self,
+            "Дубликат",
+                "Книга с такими же названием, томом, автором, годом и жанром "
+                "уже есть в библиотеке.",
+            )
+            return
         self.accept()
     
     def load_book_data(self):
