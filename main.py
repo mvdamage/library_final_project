@@ -234,13 +234,6 @@ class Library(QMainWindow):
         self.stats_btn.clicked.connect(self.show_statistics)
         toolbar.addWidget(self.stats_btn)          
         
-        # Фильтр по статусу
-        toolbar.addWidget(QLabel("Фильтр:"))
-        self.filter_combo = QComboBox()
-        self.filter_combo.addItems(["Все", "Активна", "Выполнена"])
-        self.filter_combo.currentTextChanged.connect(self.on_filter_changed)
-        toolbar.addWidget(self.filter_combo)
-        
         # Поиск
         toolbar.addWidget(QLabel("Поиск:"))
         self.search_edit = QLineEdit()
@@ -434,17 +427,7 @@ class Library(QMainWindow):
             if self.db.delete_book(book_id):
                 self.load_books()
                 self.status_label.setText(f"Книга '{book_title}' удалена")
-        
-    def on_filter_changed(self, filter_text):
-        """Обработка изменения фильтра"""
-        filter_map = {
-            "Все": "Все",
-            "Активна": "Активна",
-            "Выполнена": "Выполнена"
-        }
-        self.current_filter = filter_map.get(filter_text, "Все")
-        self.load_books()
-    
+            
     def on_search_changed(self, search_text):
         """Обработка поиска"""
         self.load_books()
