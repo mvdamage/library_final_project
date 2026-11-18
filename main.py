@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QTableWidget, QTableWidgetItem, QLabel, QLineEdit, QTextEdit,
-    QComboBox, QMessageBox,
+    QMessageBox,
     QHeaderView, QDialog, QDialogButtonBox,
     QFormLayout, QGroupBox
 )
