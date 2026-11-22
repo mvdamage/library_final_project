@@ -8,6 +8,9 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, QRegExp
 from PyQt5.QtGui import QFont, QRegExpValidator
+from PyQt5.QtWidgets import QFileDialog
+
+from reports import build_txt_report, build_html_report, save_report
 
 from datetime import date
 
@@ -54,7 +57,6 @@ class BookDialog(QDialog):
         # Год издания
         self.year_edit = QLineEdit()
         self.year_edit.setPlaceholderText("Введите год издания (4 цифры)")
-        self.year_edit.setMaxLength(4)
         self.year_edit.setValidator(QRegExpValidator(QRegExp(r"\d{0,4}"), self))
         form_layout.addRow("Год издания:", self.year_edit)
       
@@ -118,7 +120,7 @@ class BookDialog(QDialog):
     def try_save(self):
         """OK: проверка → закрыть только если всё ок."""
         if not self.validate_form():
-            return # диалог НЕ закрывается
+            return 
         parent = self.parent()
         if parent is None or not hasattr(parent, "db"):
             self.accept()
@@ -254,7 +256,12 @@ class Library(QMainWindow):
         self.stats_btn = QPushButton("Статистика")
         self.stats_btn.setMinimumHeight(40)
         self.stats_btn.clicked.connect(self.show_statistics)
-        toolbar.addWidget(self.stats_btn)          
+        toolbar.addWidget(self.stats_btn)
+
+        #Отчет
+        self.report_btn = QPushButton("Отчёт")
+        self.report_btn.clicked.connect(self.export_report)
+        toolbar.addWidget(self.report_btn)          
         
         # Поиск
         toolbar.addWidget(QLabel("Поиск:"))
@@ -371,7 +378,7 @@ class Library(QMainWindow):
                 item.setFlags(item.flags() & ~Qt.ItemIsEditable)
                 if col == 0:
                     item.setData(Qt.UserRole, book[0])
-                if col == 3:  # год издания — сортировка как число
+                if col == 3:  # год издания — сортировка чисел
                     try:
                         item.setData(Qt.EditRole, int(value))
                     except (TypeError, ValueError):
@@ -406,7 +413,7 @@ class Library(QMainWindow):
             return
         book_id = int(item.data(Qt.UserRole))
         
-        # Получаем полные данные книг из БД
+        # Получение полных данных книг из БД
         books = self.db.get_all_books()
         book_data = next((t for t in books if t[0] == book_id), None)
         
@@ -469,9 +476,29 @@ class Library(QMainWindow):
         self.db.close()
         event.accept()
 
+    def export_report(self):
+        """Генерация отчета"""
+        books = self.db.get_all_books()
+        by_genre = self.db.count_by_genre()  
+        by_author = self.db.count_by_author()
+        path, filt = QFileDialog.getSaveFileName(
+            self, "Сохранить отчёт", "otchet",
+            "HTML (*.html);;Текст (*.txt)",
+        )
+        if not path:
+            return
+        if path.lower().endswith(".html"):
+            text = build_html_report(books, by_genre, by_author)
+        else:
+            if not path.lower().endswith(".txt"):
+                path += ".txt"
+            text = build_txt_report(books, by_genre, by_author)
+        save_report(path, text)
+        self.status_label.setText(f"Отчёт сохранён: {path}")
+
 def main():
     app = QApplication(sys.argv)
-    app.setStyle('Fusion')  # Современный стиль
+    app.setStyle('Fusion')
     
     # Установка шрифта
     font = QFont("Inter", 12)

@@ -26,7 +26,7 @@ class Database:
         self.conn.commit()
 
     # Нормализация тома
-    def _prepare_volume(self, volume):
+    def _norm_volume(self, volume):
         """Пустой том → NULL, иначе текст как ввели."""
         if volume is None:
             return None
@@ -34,7 +34,7 @@ class Database:
         return None if not s else s
 
     # Нормализация года
-    def _prepare_year(self, year):
+    def _norm_year(self, year):
         if year is None:
             return None
         s = str(year).strip()
@@ -55,8 +55,8 @@ class Database:
         t = self._norm_text(title)
         a = self._norm_text(author)
         g = self._norm_text(genre)
-        vol = self._prepare_volume(volume)
-        y = self._prepare_year(year)
+        vol = self._norm_volume(volume)
+        y = self._norm_year(year)
         self.cursor.execute(
             "SELECT id, title, volume, author, year, genre FROM library"
         )
@@ -66,9 +66,9 @@ class Database:
                 continue
             if (
                 self._norm_text(r_title) == t
-                and self._prepare_volume(r_vol) == vol
+                and self._norm_volume(r_vol) == vol
                 and self._norm_text(r_author) == a
-                and self._prepare_year(r_year) == y
+                and self._norm_year(r_year) == y
                 and self._norm_text(r_genre) == g
             ):
                 return True
@@ -76,8 +76,8 @@ class Database:
   
     def add_book(self, title, volume, author, year, genre):
         """Добавление новой книги"""
-        volume = self._prepare_volume(volume)
-        year = self._prepare_year(year)
+        volume = self._norm_volume(volume)
+        year = self._norm_year(year)
         self.cursor.execute('''
             INSERT INTO library (title, volume, author, year, genre)
             VALUES (?, ?, ?, ?, ?)
@@ -101,8 +101,8 @@ class Database:
     
     def update_book(self, book_id, title, volume, author, year, genre):
         """Обновление книги"""
-        volume = self._prepare_volume(volume)
-        year = self._prepare_year(year)
+        volume = self._norm_volume(volume)
+        year = self._norm_year(year)
         self.cursor.execute('''
             UPDATE library 
             SET title = ?, volume = ?, author = ?, year = ?, genre = ?
@@ -121,7 +121,7 @@ class Database:
             WHERE py_lower(title) LIKE ?
                 OR py_lower(author) LIKE ?
                 OR py_lower(genre) LIKE ?
-                OR py_lower(CAST(year AS TEXT)) LIKE ?
+                OR CAST(year AS TEXT) LIKE ?
             ORDER BY id
             ''',
             (pattern, pattern, pattern, pattern),
