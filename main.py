@@ -101,7 +101,7 @@ class BookDialog(QDialog):
             QMessageBox.warning(
                 self,
                 "Ошибка",
-                "Год — ровно 4 цифры (например, 1999).",
+                "Год — ровно 4 цифры (например, 2026).",
             )
             self.year_edit.setFocus()
             return False
@@ -259,7 +259,7 @@ class Library(QMainWindow):
         toolbar.addWidget(self.stats_btn)
 
         #Отчет
-        self.report_btn = QPushButton("Отчёт")
+        self.report_btn = QPushButton("Отчет")
         self.report_btn.clicked.connect(self.export_report)
         toolbar.addWidget(self.report_btn)          
         
@@ -283,7 +283,8 @@ class Library(QMainWindow):
         self.table.setHorizontalHeaderLabels([
             "Название", "Том", "Автор", "Год издания", "Жанр"
         ])
-        
+     #   self.table.setWordWrap(True)
+          
         # Настройка таблицы
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.Stretch)
@@ -295,6 +296,8 @@ class Library(QMainWindow):
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
         self.table.setSelectionMode(QTableWidget.SingleSelection)
         self.table.setAlternatingRowColors(True)
+     #   self.table.setSortingEnabled(False)
+     #   header.sectionResized.connect(lambda *_: self.table.resizeRowsToContents())
         
         # Двойной клик для редактирования
         self.table.doubleClicked.connect(self.edit_book)
@@ -361,16 +364,14 @@ class Library(QMainWindow):
                 padding: 0 5px 0 5px;
             }
         """)
-        
     def load_books(self):
         """Загрузка книг в таблицу"""
-        if hasattr(self, 'search_edit') and self.search_edit.text().strip():
+        if hasattr(self, "search_edit") and self.search_edit.text().strip():
             books = self.db.search_book(self.search_edit.text())
         else:
             books = self.db.get_all_books()
-        
+        self.table.setSortingEnabled(False)
         self.table.setRowCount(len(books))
-        
         for row, book in enumerate(books):
             for col, value in enumerate(book[1:]):
                 text = "" if value is None else str(value)
@@ -378,12 +379,13 @@ class Library(QMainWindow):
                 item.setFlags(item.flags() & ~Qt.ItemIsEditable)
                 if col == 0:
                     item.setData(Qt.UserRole, book[0])
-                if col == 3:  # год издания — сортировка чисел
+                if col == 3:
                     try:
                         item.setData(Qt.EditRole, int(value))
                     except (TypeError, ValueError):
                         item.setData(Qt.EditRole, 0)
                 self.table.setItem(row, col, item)
+  #      self.table.resizeRowsToContents()
         self.table.setSortingEnabled(True)
         
     def add_book(self):
@@ -494,7 +496,7 @@ class Library(QMainWindow):
                 path += ".txt"
             text = build_txt_report(books, by_genre, by_author)
         save_report(path, text)
-        self.status_label.setText(f"Отчёт сохранён: {path}")
+        self.status_label.setText(f"Отчет сохранен: {path}")
 
 def main():
     app = QApplication(sys.argv)

@@ -136,20 +136,20 @@ class Database:
     def count_by_genre(self):
         """Количество книг по жанрам"""
         self.cursor.execute('''
-            SELECT genre, COUNT(*)
+            SELECT genre, COUNT(*) AS genre_count
             FROM library
             GROUP BY genre
-            ORDER BY COUNT(*) DESC, genre
+            ORDER BY genre_count DESC;
         ''')
         return self.cursor.fetchall()
     
     def count_by_author(self):
         """Количество книг по авторам"""
         self.cursor.execute('''
-            SELECT author, COUNT(*)
+            SELECT author, COUNT(*) AS author_count
             FROM library
             GROUP BY author
-            ORDER BY COUNT(*) DESC, author
+            ORDER BY author_count DESC;
         ''')
         return self.cursor.fetchall()
     

@@ -7,7 +7,7 @@ from pathlib import Path
 def build_txt_report(books, by_genre, by_author):
     now = datetime.now().strftime("%d.%m.%Y %H:%M")
     lines = [
-        "Отчёт: домашняя библиотека",
+        "Отчет: домашняя библиотека",
         f"Дата: {now}",
         f"Всего книг: {len(books)}",
         "",
