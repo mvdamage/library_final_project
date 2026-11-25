@@ -4,12 +4,10 @@ from PyQt5.QtWidgets import (
     QPushButton, QTableWidget, QTableWidgetItem, QLabel, QLineEdit, QTextEdit,
     QMessageBox,
     QHeaderView, QDialog, QDialogButtonBox,
-    QFormLayout, QGroupBox
+    QFormLayout, QGroupBox, QFileDialog
 )
-from PyQt5.QtCore import Qt, QRegExp
+from PyQt5.QtCore import Qt, QRegExp, QTimer
 from PyQt5.QtGui import QFont, QRegExpValidator
-from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtCore import QTimer
 
 from reports import build_txt_report, build_html_report, save_report
 
@@ -284,7 +282,6 @@ class Library(QMainWindow):
         self.table.setHorizontalHeaderLabels([
             "Название", "Том", "Автор", "Год издания", "Жанр"
         ])
-     #   self.table.setWordWrap(True)
         self.table.setWordWrap(True)
         self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
           
@@ -300,8 +297,6 @@ class Library(QMainWindow):
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
         self.table.setSelectionMode(QTableWidget.SingleSelection)
         self.table.setAlternatingRowColors(True)
-     #   self.table.setSortingEnabled(False)
-     #   header.sectionResized.connect(lambda *_: self.table.resizeRowsToContents())
         
         # Двойной клик для редактирования
         self.table.doubleClicked.connect(self.edit_book)
@@ -412,9 +407,7 @@ class Library(QMainWindow):
                     except (TypeError, ValueError):
                         item.setData(Qt.EditRole, 0)
                 self.table.setItem(row, col, item)
-  #      self.table.resizeRowsToContents()
         QTimer.singleShot(0, self.refresh_row_heights)
-        self.table.setSortingEnabled(True)
         self.table.setSortingEnabled(True)
         
     def add_book(self):

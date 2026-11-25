@@ -6,7 +6,7 @@ class Database:
         self.conn.create_function(
             "py_lower",
             1,
-            lambda value: "" if value is None else str(value).casefold(),
+            lambda value: "" if value is None else str(value).casefold().replace("ё", "е"),
         )
         self.cursor = self.conn.cursor()
         self.create_table()
@@ -42,11 +42,20 @@ class Database:
             return None
         return int(s)
     
-    # Нормализация любых текстовых строк
+    # Нормализация текстовых строк без пробелов, без учета регистра; ё -> е при поиске и дубликатах
     def _norm_text(self, value):
         if value is None:
             return ""
-        return str(value).strip().casefold()
+        s = str(value).strip().casefold()
+        return s.replace("ё", "е")
+
+    def _save_text(self, value):
+        """БД: пробелы по краям, замена ё → е.
+        Регистр не меняется"""
+        if value is None:
+            return ""
+        s = str(value).strip()
+        return s.replace("Ё", "Е").replace("ё", "е")
     
     def is_duplicate_book(self, title, volume, author, year, genre, exclude_id=None):
         """True — такая книга уже есть (все поля совпадают, регистр не важен).
@@ -76,6 +85,9 @@ class Database:
   
     def add_book(self, title, volume, author, year, genre):
         """Добавление новой книги"""
+        title = self._save_text(title)
+        author = self._save_text(author)
+        genre = self._save_text(genre)
         volume = self._norm_volume(volume)
         year = self._norm_year(year)
         self.cursor.execute('''
@@ -101,6 +113,9 @@ class Database:
     
     def update_book(self, book_id, title, volume, author, year, genre):
         """Обновление книги"""
+        title = self._save_text(title)
+        author = self._save_text(author)
+        genre = self._save_text(genre)
         volume = self._norm_volume(volume)
         year = self._norm_year(year)
         self.cursor.execute('''
@@ -110,10 +125,17 @@ class Database:
         ''', (title, volume, author, year, genre, book_id))
         self.conn.commit()
         return self.cursor.rowcount > 0
+
+    def _norm_search(self, text):
+        """Нормализация поиска"""
+        if text is None:
+            return ""
+        return str(text).strip().casefold().replace("ё", "е")
     
     def search_book(self, search_term):
         """Поиск по названию, автору, жанру, году без учёта регистра"""
-        pattern = f"%{search_term.strip().casefold()}%"
+        pattern = f"%{self._norm_search(search_term)}%"
+    #    pattern = f"%{search_term.strip().casefold()}%"
         self.cursor.execute(
             '''
             SELECT id, title, volume, author, year, genre
