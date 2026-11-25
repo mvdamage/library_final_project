@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QRegExp
 from PyQt5.QtGui import QFont, QRegExpValidator
 from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtCore import QTimer
 
 from reports import build_txt_report, build_html_report, save_report
 
@@ -284,6 +285,8 @@ class Library(QMainWindow):
             "Название", "Том", "Автор", "Год издания", "Жанр"
         ])
      #   self.table.setWordWrap(True)
+        self.table.setWordWrap(True)
+        self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
           
         # Настройка таблицы
         header = self.table.horizontalHeader()
@@ -292,7 +295,8 @@ class Library(QMainWindow):
         header.setSectionResizeMode(2, QHeaderView.Stretch)
         header.setSectionResizeMode(3, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(4, QHeaderView.ResizeToContents)
-        
+        header.sectionResized.connect(lambda *_: self.refresh_row_heights())
+
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
         self.table.setSelectionMode(QTableWidget.SingleSelection)
         self.table.setAlternatingRowColors(True)
@@ -303,6 +307,28 @@ class Library(QMainWindow):
         self.table.doubleClicked.connect(self.edit_book)
         
         parent_layout.addWidget(self.table)
+
+    def refresh_row_heights(self):
+        """Высота строк под перенос длинного текста."""
+        if self.table.rowCount() == 0:
+            return
+        self.table.resizeRowsToContents()
+        min_h = self.table.fontMetrics().height() + 10
+        for row in range(self.table.rowCount()):
+            self.table.setRowHeight(row, max(self.table.rowHeight(row), min_h))
+
+    def _select_book_by_id(self, book_id):
+        """Выделить строку книги по id после перезагрузки таблицы."""
+        for row in range(self.table.rowCount()):
+            item = self.table.item(row, 0)
+            if item is None:
+                continue
+            raw = item.data(Qt.UserRole)
+            if raw is not None and int(raw) == int(book_id):
+                self.table.selectRow(row)
+                self.table.setCurrentCell(row, 0)
+                self.table.scrollToItem(item, QHeaderView.PositionAtCenter)
+                break
     
     def create_status_bar(self):
         """Создание строки состояния"""
@@ -364,6 +390,7 @@ class Library(QMainWindow):
                 padding: 0 5px 0 5px;
             }
         """)
+
     def load_books(self):
         """Загрузка книг в таблицу"""
         if hasattr(self, "search_edit") and self.search_edit.text().strip():
@@ -386,6 +413,8 @@ class Library(QMainWindow):
                         item.setData(Qt.EditRole, 0)
                 self.table.setItem(row, col, item)
   #      self.table.resizeRowsToContents()
+        QTimer.singleShot(0, self.refresh_row_heights)
+        self.table.setSortingEnabled(True)
         self.table.setSortingEnabled(True)
         
     def add_book(self):
@@ -393,7 +422,7 @@ class Library(QMainWindow):
         dialog = BookDialog(self)
         if dialog.exec_() == QDialog.Accepted:
             data = dialog.get_book_data()
-            self.db.add_book(
+            new_id = self.db.add_book(
                 data['title'],
                 data['volume'],
                 data['author'],
@@ -401,6 +430,7 @@ class Library(QMainWindow):
                 data['genre']
             )
             self.load_books()
+            self._select_book_by_id(new_id)
             self.status_label.setText(f"Книга '{data['title']}' добавлена")
     
     def edit_book(self):
@@ -432,6 +462,7 @@ class Library(QMainWindow):
                     data['genre']
                 )
                 self.load_books()
+                self._select_book_by_id(book_id)
                 self.status_label.setText(f"Книга обновлена")
        
     def delete_book(self):
