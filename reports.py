@@ -35,6 +35,13 @@ def build_html_report(books, by_genre, by_author):
             f"<td>{escape(b[3])}</td><td>{b[4]}</td>"
             f"<td>{escape(b[5])}</td></tr>"
         )
+    def rows_stats(items):
+        if not items:
+            return "<tr><td colspan='2'>Нет данных</td></tr>"
+        return "".join(
+            f"<tr><td>{escape(name)}</td><td>{cnt}</td></tr>"
+            for name, cnt in items
+        )
     return f"""<!DOCTYPE html>
 <html lang="ru"><head>
 <meta charset="utf-8">
@@ -44,14 +51,33 @@ body {{ font-family: Segoe UI, sans-serif; margin: 24px; }}
 table {{ border-collapse: collapse; width: 100%; margin: 16px 0; }}
 th, td {{ border: 1px solid #ccc; padding: 8px; text-align: left; }}
 th {{ background: #9fa1a3; color: #fff; }}
+.stats-row {{ display: flex; gap: 24px; align-items: flex-start; margin: 16px 0; }}
+.stats-col {{ flex: 1; min-width: 0; }}
+.stats-col h2 {{ margin-top: 0; }}
+.stats-col table {{ margin: 8px 0 0; }}
 </style>
 </head><body>
 <h1>Домашняя библиотека</h1>
 <p>Сформирован: {now}. Всего: {len(books)}</p>
 <h2>Книги</h2>
 <table><tr><th>Название</th><th>Том</th><th>Автор</th><th>Год</th><th>Жанр</th></tr>
-{rows or "<tr><td colspan='5'>Нет книг</td></tr>"}
+{rows or "<tr><td colspan='5'>Нет книг</td></tr>"}</table>
+<div class="stats-row">
+<div class="stats-col">
+<h2>По жанрам</h2>
+<table>
+<tr><th>Жанр</th><th>Количество</th></tr>
+{rows_stats(by_genre)}
 </table>
+</div>
+<div class="stats-col">
+<h2>По авторам</h2>
+<table>
+<tr><th>Автор</th><th>Количество</th></tr>
+{rows_stats(by_author)}
+</table>
+</div>
+</div>
 </body></html>"""
 
 def save_report(path, content):

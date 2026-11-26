@@ -30,7 +30,7 @@ class Database:
         """Пустой том → NULL, иначе текст как ввели."""
         if volume is None:
             return None
-        s = str(volume).strip()
+        s = str(volume).strip().replace("Ё", "Е").replace("ё", "е")
         return None if not s else s
 
     # Нормализация года
@@ -135,7 +135,6 @@ class Database:
     def search_book(self, search_term):
         """Поиск по названию, автору, жанру, году без учёта регистра"""
         pattern = f"%{self._norm_search(search_term)}%"
-    #    pattern = f"%{search_term.strip().casefold()}%"
         self.cursor.execute(
             '''
             SELECT id, title, volume, author, year, genre
