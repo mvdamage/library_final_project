@@ -55,7 +55,7 @@ library_final_project/
 1. Откройте терминал и перейдите в папку проекта:
 
    ```powershell
-   cd C:\Users\Marina\Documents\library_final_project
+   cd путь\library_final_project
    ```
 
 2. (Рекомендуется) создайте и активируйте виртуальное окружение:
@@ -155,7 +155,7 @@ library_final_project/
 
 ## Автотесты
 
-Установка pytest (если еще не установлен):
+Установка pytest (при необходимости, если еще не установлен):
 
 ```powershell
 python -m pip install pytest
