@@ -47,11 +47,10 @@ class Database:
         if value is None:
             return ""
         s = str(value).strip().casefold()
-        return s.replace("ё", "е")
+        return s.replace("Ё", "Е").replace("ё", "е")
 
     def _save_text(self, value):
-        """БД: пробелы по краям, замена ё → е.
-        Регистр не меняется"""
+        """БД: пробелы по краям, замена ё → е. Регистр не меняется"""
         if value is None:
             return ""
         s = str(value).strip()
@@ -133,7 +132,7 @@ class Database:
         return str(text).strip().casefold().replace("ё", "е")
     
     def search_book(self, search_term):
-        """Поиск по названию, автору, жанру, году без учёта регистра"""
+        """Поиск по названию, автору, жанру, году без учета регистра"""
         pattern = f"%{self._norm_search(search_term)}%"
         self.cursor.execute(
             '''

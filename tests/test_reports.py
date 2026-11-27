@@ -63,7 +63,7 @@ def test_html_report_contains_book_and_metadata(sample_stats) -> None:
     assert '<html lang="ru">' in html
     assert "<title>Библиотека</title>" in html
     assert "Домашняя библиотека" in html
-    assert "Всего: 1" in html
+    assert "Всего книг: 1" in html
     assert "Мастер и Маргарита" in html
     assert "Булгаков" in html
     assert "<table>" in html
@@ -93,7 +93,7 @@ def test_html_report_empty_books_placeholder() -> None:
     html = build_html_report([], [], [])
 
     assert "Нет книг" in html
-    assert "Всего: 0" in html
+    assert "Всего книг: 0" in html
 
 def test_html_report_stats_with_data(sample_stats) -> None:
     by_genre, by_author = sample_stats

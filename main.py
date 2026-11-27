@@ -81,7 +81,7 @@ class BookDialog(QDialog):
         buttons.button(QDialogButtonBox.Ok).setText(ok_text)
 
     def validate_form(self):
-        """Валидация всех полей. False — форма остаётся открытой."""
+        """Валидация всех полей. False — форма остается открытой."""
         data = self.get_book_data()
         if not data["title"]:
             QMessageBox.warning(self, "Ошибка", "Введите название книги.")
@@ -117,7 +117,7 @@ class BookDialog(QDialog):
         return True
 
     def try_save(self):
-        """OK: проверка → закрыть только если всё ок."""
+        """OK: проверка → закрыть только если все ок."""
         if not self.validate_form():
             return 
         parent = self.parent()
@@ -508,7 +508,7 @@ class Library(QMainWindow):
         by_genre = self.db.count_by_genre()  
         by_author = self.db.count_by_author()
         path, filt = QFileDialog.getSaveFileName(
-            self, "Сохранить отчёт", "otchet",
+            self, "Сохранить отчет", "otchet",
             "HTML (*.html);;Текст (*.txt)",
         )
         if not path:

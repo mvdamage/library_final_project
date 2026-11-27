@@ -58,7 +58,7 @@ th {{ background: #9fa1a3; color: #fff; }}
 </style>
 </head><body>
 <h1>Домашняя библиотека</h1>
-<p>Сформирован: {now}. Всего: {len(books)}</p>
+<p>Сформирован: {now}. Всего книг: {len(books)}</p>
 <h2>Книги</h2>
 <table><tr><th>Название</th><th>Том</th><th>Автор</th><th>Год</th><th>Жанр</th></tr>
 {rows or "<tr><td colspan='5'>Нет книг</td></tr>"}</table>
